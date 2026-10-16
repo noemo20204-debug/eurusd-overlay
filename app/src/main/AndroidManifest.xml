@@ -10,7 +10,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="EUR/USD Overlay"
+        android:label="FX Overlay"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
 
@@ -29,7 +29,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Persistent user-enabled EUR/USD floating price overlay sourced from Investing.com" />
+                android:value="Persistent user-enabled floating FX prices sourced from Investing.com" />
         </service>
 
         <receiver
