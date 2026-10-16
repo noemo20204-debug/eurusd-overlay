@@ -83,118 +83,18 @@ public class MainActivity extends Activity {
     }
 
     private void buildUi() {
-        ScrollView scroll = new ScrollView(this);
-        scroll.setFillViewport(true);
-        scroll.setBackgroundColor(BG);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        root.setPadding(dp(18), dp(26), dp(18), dp(32));
-        scroll.addView(root);
-
-        TextView title = text("أسعار العملات", 29, Color.WHITE, true);
-        title.setGravity(Gravity.CENTER);
-        root.addView(title, lp(-1));
-        TextView sub = text("الشريط العائم", 17, MUTED, false);
-        sub.setGravity(Gravity.CENTER);
-        root.addView(sub, lp(-1));
-
-        status = text("", 14, GREEN, true);
-        status.setGravity(Gravity.CENTER);
-        status.setPadding(dp(20), dp(10), dp(20), dp(10));
-        status.setBackground(bg(Color.rgb(9, 61, 50), 24, Color.rgb(24, 105, 79)));
-        LinearLayout.LayoutParams statusLp = lp(-2);
-        statusLp.gravity = Gravity.CENTER_HORIZONTAL;
-        statusLp.topMargin = dp(16);
-        root.addView(status, statusLp);
-
-        LinearLayout preview = new LinearLayout(this);
-        preview.setOrientation(LinearLayout.VERTICAL);
-        preview.setPadding(dp(16), dp(17), dp(16), dp(17));
-        preview.setBackground(bg(Color.rgb(10, 33, 58), 22, BLUE));
-        preview.setElevation(dp(6));
-        LinearLayout.LayoutParams previewLp = lp(-1);
-        previewLp.topMargin = dp(24);
-        root.addView(preview, previewLp);
-        preview.addView(text("معاينة الشريط العائم", 18, Color.WHITE, true));
-        TextView previewHint = text("يظهر فوق التطبيقات ويمكن سحبه لأي مكان", 12, MUTED, false);
-        LinearLayout.LayoutParams ph = lp(-1);
-        ph.topMargin = dp(5);
-        preview.addView(previewHint, ph);
-        TextView previewText = text("EUR/USD     ••••••\nUSD/EGP     ••••••\nUSD/ILS      ••••••", 17, Color.WHITE, true);
-        previewText.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        previewText.setTextDirection(View.TEXT_DIRECTION_LTR);
-        previewText.setGravity(Gravity.CENTER);
-        previewText.setLineSpacing(dp(9), 1f);
-        previewText.setPadding(dp(10), dp(12), dp(10), dp(12));
-        previewText.setBackground(bg(Color.rgb(6, 18, 33), 14, LINE));
-        LinearLayout.LayoutParams pt = lp(-1);
-        pt.topMargin = dp(13);
-        preview.addView(previewText, pt);
-        TextView note = text("المعاينة توضيحية؛ الأسعار الحية تظهر في الشريط الفعلي", 11, MUTED, false);
-        note.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams noteLp = lp(-1);
-        noteLp.topMargin = dp(8);
-        preview.addView(note, noteLp);
-
-        TextView heading = text("الأزواج الظاهرة في الشاشة المنبثقة", 19, Color.WHITE, true);
-        LinearLayout.LayoutParams headingLp = lp(-1);
-        headingLp.topMargin = dp(27);
-        root.addView(heading, headingLp);
-        TextView info = text("اختر العملات التي تريد عرضها فوق التطبيقات", 13, MUTED, false);
-        LinearLayout.LayoutParams infoLp = lp(-1);
-        infoLp.topMargin = dp(6);
-        root.addView(info, infoLp);
-
-        LinearLayout pairs = new LinearLayout(this);
-        pairs.setOrientation(LinearLayout.VERTICAL);
-        pairs.setPadding(dp(8), dp(9), dp(8), dp(9));
-        pairs.setBackground(bg(PANEL, 22, LINE));
-        LinearLayout.LayoutParams pairsLp = lp(-1);
-        pairsLp.topMargin = dp(15);
-        root.addView(pairs, pairsLp);
-        addPair(pairs, "EUR/USD", "يورو / دولار", "show_eurusd", true);
-        addPair(pairs, "USD/EGP", "دولار / جنيه مصري", "show_usdegp", false);
-        addPair(pairs, "EUR/EGP", "يورو / جنيه مصري", "show_euregp", false);
-        addPair(pairs, "USD/ILS", "دولار / شيكل", "show_usdils", false);
-        addPair(pairs, "USD/TRY", "دولار / ليرة تركية", "show_usdtry", false);
-
-        Button start = button("▶  تشغيل / تحديث الشريط العائم", BLUE);
-        LinearLayout.LayoutParams b1 = lp(-1);
-        b1.topMargin = dp(22);
-        root.addView(start, b1);
-        start.setOnClickListener(v -> ensurePermissionAndStart());
-
-        Button stop = button("■  إيقاف الشريط بالكامل", Color.rgb(31, 50, 72));
-        LinearLayout.LayoutParams b2 = lp(-1);
-        b2.topMargin = dp(9);
-        root.addView(stop, b2);
-        stop.setOnClickListener(v -> stopOverlay());
-
-        Button battery = button("إعدادات البطارية — اختر غير مقيّد", PANEL);
-        LinearLayout.LayoutParams b3 = lp(-1);
-        b3.topMargin = dp(17);
-        root.addView(battery, b3);
-        battery.setOnClickListener(v -> {
-            try {
-                startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + getPackageName())));
-            } catch (Exception e) { startActivity(new Intent(Settings.ACTION_SETTINGS)); }
+        status = PremiumScreen.render(this, new PremiumScreen.Actions() {
+            @Override public void changed() { refreshRunningOverlay(); refreshStatus(); }
+            @Override public void start() { ensurePermissionAndStart(); }
+            @Override public void stop() { stopOverlay(); }
+            @Override public void battery() {
+                try { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getPackageName()))); }
+                catch (Exception e) { startActivity(new Intent(Settings.ACTION_SETTINGS)); }
+            }
+            @Override public void source() { startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://sa.investing.com/currencies/eur-usd"))); }
         });
-
-        Button source = button("فتح EUR/USD في Investing.com", PANEL);
-        LinearLayout.LayoutParams b4 = lp(-1);
-        b4.topMargin = dp(9);
-        root.addView(source, b4);
-        source.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW,
-                Uri.parse("https://sa.investing.com/currencies/eur-usd"))));
-
-        TextView footer = text("تنعكس تغييرات الأزواج مباشرة على الشريط أثناء تشغيله.\nاسحب الشريط بإصبعك لتغيير مكانه.", 12, MUTED, false);
-        footer.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams footerLp = lp(-1);
-        footerLp.topMargin = dp(21);
-        root.addView(footer, footerLp);
-        setContentView(scroll);
         refreshStatus();
     }
 
