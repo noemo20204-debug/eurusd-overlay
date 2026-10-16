@@ -2,9 +2,7 @@ package com.almuhandis.eurusdoverlay;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.Typeface;
+import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -12,68 +10,90 @@ import android.widget.*;
 
 public final class PremiumScreen {
   public interface Actions { void changed(); void start(); void stop(); void battery(); void source(); }
-  private static final int BG=0xff061121, PANEL=0xff10243a, DEEP=0xff08182b, EDGE=0xff254361;
-  private static final int WHITE=0xfff6f9ff, SUB=0xff93a9c1, BLUE=0xff2675ff, MINT=0xff31e7ad;
-  private static Activity a; private static Typeface regular,bold; private static SharedPreferences prefs;
-  private static int dp(float n){return Math.round(n*a.getResources().getDisplayMetrics().density);}
-  private static GradientDrawable bg(int color,int radius,int border){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(radius));if(border!=0)g.setStroke(dp(1),border);return g;}
-  private static GradientDrawable grad(int c1,int c2,int radius,int border){GradientDrawable g=new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{c1,c2});g.setCornerRadius(dp(radius));if(border!=0)g.setStroke(dp(1),border);return g;}
-  private static TextView txt(String s,int size,int color,boolean heavy){TextView v=new TextView(a);v.setText(s);v.setTextSize(size);v.setTextColor(color);v.setTypeface(heavy?bold:regular);v.setGravity(Gravity.CENTER_VERTICAL);v.setIncludeFontPadding(false);return v;}
+  private static final int BG=0xff061121, PANEL=0xff0c1b2f, EDGE=0xff243952, WHITE=0xfff7faff, SUB=0xff9babc2, BLUE=0xff197cff, GREEN=0xff28d99b;
+  private static Activity a; private static SharedPreferences prefs; private static Typeface regular,bold;
+  private static int d(float n){return Math.round(n*a.getResources().getDisplayMetrics().density);}
   private static LinearLayout vertical(){LinearLayout l=new LinearLayout(a);l.setOrientation(1);return l;}
   private static LinearLayout horizontal(){LinearLayout l=new LinearLayout(a);l.setOrientation(0);l.setGravity(Gravity.CENTER_VERTICAL);return l;}
-  private static LinearLayout.LayoutParams lp(int w,int h){return new LinearLayout.LayoutParams(w<0?w:dp(w),h<0?h:dp(h));}
-  private static void gap(LinearLayout l,int h){View v=new View(a);l.addView(v,lp(1,h));}
-  private static void loadFonts(){try{regular=Typeface.createFromAsset(a.getAssets(),"fonts/Cairo-Regular.ttf");bold=Typeface.createFromAsset(a.getAssets(),"fonts/Cairo-Bold.ttf");}catch(Exception e){regular=Typeface.create("sans-serif",Typeface.NORMAL);bold=Typeface.create("sans-serif",Typeface.BOLD);}}
+  private static LinearLayout.LayoutParams lp(int w,int h){return new LinearLayout.LayoutParams(w<0?w:d(w),h<0?h:d(h));}
+  private static void space(LinearLayout p,int h){p.addView(new View(a),lp(1,h));}
+  private static GradientDrawable fill(int color,int radius,int border){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(d(radius));if(border!=0)g.setStroke(d(1),border);return g;}
+  private static GradientDrawable gradient(int[] colors,int radius,int border){GradientDrawable g=new GradientDrawable(GradientDrawable.Orientation.TL_BR,colors);g.setCornerRadius(d(radius));if(border!=0)g.setStroke(d(1),border);return g;}
+  private static TextView t(String value,int size,int color,boolean heavy){TextView v=new TextView(a);v.setText(value);v.setTextColor(color);v.setTextSize(size);v.setTypeface(heavy?bold:regular);v.setIncludeFontPadding(false);v.setGravity(Gravity.CENTER_VERTICAL);return v;}
+  private static void fonts(){try{regular=Typeface.createFromAsset(a.getAssets(),"fonts/Cairo-Regular.ttf");bold=Typeface.createFromAsset(a.getAssets(),"fonts/Cairo-Bold.ttf");}catch(Exception e){regular=Typeface.DEFAULT;bold=Typeface.DEFAULT_BOLD;}}
   public static TextView render(Activity activity,Actions actions){
-    a=activity; prefs=a.getSharedPreferences("overlay_prefs",Activity.MODE_PRIVATE);loadFonts();
+    a=activity;prefs=a.getSharedPreferences("overlay_prefs",Activity.MODE_PRIVATE);fonts();
     a.getWindow().setStatusBarColor(BG);a.getWindow().setNavigationBarColor(BG);
-    ScrollView scroll=new ScrollView(a);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);scroll.setVerticalScrollBarEnabled(false);
-    LinearLayout root=vertical();root.setPadding(dp(18),dp(24),dp(18),dp(34));root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);scroll.addView(root);
-    TextView title=txt("أسعار العملات",30,WHITE,true);title.setGravity(Gravity.CENTER);root.addView(title,lp(-1,48));
-    TextView sub=txt("الشريط العائم",17,SUB,false);sub.setGravity(Gravity.CENTER);root.addView(sub,lp(-1,30));gap(root,14);
-    TextView status=txt("",14,MINT,true);status.setGravity(Gravity.CENTER);status.setPadding(dp(22),dp(6),dp(22),dp(6));status.setBackground(bg(0xff0c443b,28,0xff126d5a));LinearLayout.LayoutParams st=lp(-2,40);st.gravity=Gravity.CENTER;root.addView(status,st);gap(root,23);
-    LinearLayout hero=vertical();hero.setPadding(dp(18),dp(16),dp(18),dp(16));hero.setBackground(grad(0xff123d61,0xff061a31,25,BLUE));hero.setElevation(dp(9));root.addView(hero,lp(-1,-2));
-    TextView heroLabel=txt("معاينة الشريط العائم",18,WHITE,true);hero.addView(heroLabel);gap(hero,4);
-    TextView heroSub=txt("المظهر المصغّر فوق جميع التطبيقات",12,SUB,false);hero.addView(heroSub);gap(hero,16);
-    LinearLayout sample=vertical();sample.setPadding(dp(13),dp(12),dp(13),dp(12));sample.setBackground(grad(0xff061426,0xff102b40,18,0xff2d5378));hero.addView(sample,lp(-1,-2));
-    addSample(sample,"🇪🇺 🇺🇸","EUR/USD","1.1255",MINT);
-    addSample(sample,"🇺🇸 🇪🇬","USD/EGP","53.4500",WHITE);
-    addSample(sample,"🇺🇸 🇮🇱","USD/ILS","3.0886",WHITE);
-    TextView demo=txt("قيم المعاينة توضيحية، والشريط الحقيقي يعرض الأسعار المباشرة",10,SUB,false);demo.setGravity(Gravity.CENTER);gap(hero,11);hero.addView(demo);
-    gap(root,26);
-    TextView heading=txt("الأزواج الظاهرة في الشاشة المنبثقة",19,WHITE,true);root.addView(heading);gap(root,5);
-    TextView detail=txt("اختر العملات التي تريد عرضها فوق التطبيقات",12,SUB,false);root.addView(detail);gap(root,15);
-    LinearLayout card=vertical();card.setPadding(dp(9),dp(10),dp(9),dp(10));card.setBackground(bg(PANEL,22,EDGE));root.addView(card,lp(-1,-2));
-    pair(card,"🇪🇺 🇺🇸","EUR/USD","يورو / دولار","show_eurusd",true,actions);
-    pair(card,"🇺🇸 🇪🇬","USD/EGP","دولار / جنيه مصري","show_usdegp",false,actions);
-    pair(card,"🇪🇺 🇪🇬","EUR/EGP","يورو / جنيه مصري","show_euregp",false,actions);
-    pair(card,"🇺🇸 🇮🇱","USD/ILS","دولار / شيكل","show_usdils",false,actions);
-    pair(card,"🇺🇸 🇹🇷","USD/TRY","دولار / ليرة تركية","show_usdtry",false,actions);
-    gap(root,20);
-    action(root,"▶   تشغيل / تحديث الشريط العائم",grad(0xff138de8,0xff2041d7,17,0xff369eff),actions::start);
-    gap(root,11);action(root,"■   إيقاف الشريط بالكامل",grad(0xff233b55,0xff16283d,17,EDGE),actions::stop);
-    gap(root,18);action(root,"▣   إعدادات البطارية — اختر غير مقيّد",bg(PANEL,16,EDGE),actions::battery);
-    gap(root,10);action(root,"↗   فتح EUR/USD في Investing.com",bg(PANEL,16,EDGE),actions::source);
-    gap(root,18);TextView footer=txt("أي تغيير في الأزواج ينعكس مباشرة على الشريط أثناء تشغيله.\nاسحب الشريط بإصبعك لتغيير مكانه.",12,SUB,false);footer.setGravity(Gravity.CENTER);root.addView(footer,lp(-1,-2));
+    ScrollView scroll=new ScrollView(a);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);scroll.setBackgroundColor(BG);
+    LinearLayout root=vertical();root.setPadding(d(15),d(19),d(15),d(27));root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);scroll.addView(root);
+    LinearLayout top=horizontal();root.addView(top,lp(-1,47));
+    icon(top,"⚙",()->actions.battery());
+    LinearLayout titles=vertical();titles.setGravity(Gravity.CENTER);top.addView(titles,new LinearLayout.LayoutParams(0,-1,1));
+    TextView heading=t("أسعار العملات",27,WHITE,true);heading.setGravity(Gravity.CENTER);titles.addView(heading);
+    icon(top,"◎",()->actions.source());
+    TextView sub=t("الشريط العائم",17,SUB,false);sub.setGravity(Gravity.CENTER);root.addView(sub,lp(-1,31));
+    space(root,9);
+    TextView status=t("",13,GREEN,true);status.setGravity(Gravity.CENTER);status.setPadding(d(16),d(3),d(16),d(3));status.setBackground(fill(0xff063f34,30,0xff176a58));LinearLayout.LayoutParams st=lp(-2,35);st.gravity=Gravity.CENTER;root.addView(status,st);
+    space(root,17);
+    Hero hero=new Hero(a);root.addView(hero,lp(-1,151));
+    space(root,18);
+    LinearLayout section=horizontal();root.addView(section,lp(-1,50));
+    TextView eye=t("◉",24,0xff40adff,true);eye.setGravity(Gravity.CENTER);eye.setBackground(fill(0xff10243f,13,EDGE));section.addView(eye,lp(43,43));
+    LinearLayout sectionText=vertical();sectionText.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams sText=new LinearLayout.LayoutParams(0,-1,1);sText.setMargins(0,0,d(10),0);section.addView(sectionText,sText);
+    TextView sectionTitle=t("معاينة الشريط العائم",17,WHITE,true);sectionText.addView(sectionTitle);
+    TextView sectionSub=t("يظهر فوق جميع التطبيقات ويمكن سحبه لأي مكان",11,SUB,false);sectionText.addView(sectionSub);
+    space(root,13);
+    LinearLayout card=vertical();card.setPadding(d(10),d(15),d(10),d(12));card.setBackground(gradient(new int[]{0xff10223a,0xff08172b},21,EDGE));root.addView(card,lp(-1,-2));
+    TextView pairTitle=t("الأزواج الظاهرة في الشاشة المنبثقة",18,WHITE,true);pairTitle.setGravity(Gravity.CENTER);card.addView(pairTitle,lp(-1,35));
+    TextView pairSub=t("اختر الأزواج التي تريد ظهورها في الشريط العائم",11,SUB,false);pairSub.setGravity(Gravity.CENTER);card.addView(pairSub,lp(-1,25));space(card,9);
+    pair(card,"🇪🇺","🇺🇸","EUR/USD","يورو / دولار","show_eurusd",true,actions);
+    pair(card,"🇺🇸","🇪🇬","USD/EGP","دولار / جنيه مصري","show_usdegp",false,actions);
+    pair(card,"🇪🇺","🇪🇬","EUR/EGP","يورو / جنيه مصري","show_euregp",false,actions);
+    pair(card,"🇺🇸","🇮🇱","USD/ILS","دولار / شيكل","show_usdils",false,actions);
+    pair(card,"🇺🇸","🇹🇷","USD/TRY","دولار / ليرة تركية","show_usdtry",false,actions);
+    space(card,9);
+    action(card,"▶  تشغيل / تحديث الشريط العائم",gradient(new int[]{0xff159cff,0xff1744e2},16,0xff3aa9ff),58,actions::start);
+    space(card,9);
+    action(card,"■  إيقاف الشريط بالكامل",gradient(new int[]{0xff263e5b,0xff14263e},15,0xff39516d),55,actions::stop);
+    space(card,13);
+    action(card,"▣    إعدادات البطارية — اختر غير مقيّد     ›",fill(0xff0d2139,14,EDGE),55,actions::battery);
+    space(card,9);
+    action(card,"↗    فتح EUR/USD في Investing.com     ›",fill(0xff0d2139,14,EDGE),55,actions::source);
+    space(root,14);
+    TextView note=t("الأسعار داخل المعاينة توضيحية فقط. الأسعار الفعلية تظهر في الشريط العائم.",10,SUB,false);note.setGravity(Gravity.CENTER);root.addView(note,lp(-1,-2));
     a.setContentView(scroll);return status;
   }
-  private static void addSample(LinearLayout target,String flags,String code,String price,int color){
-    LinearLayout r=horizontal();r.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);target.addView(r,lp(-1,38));
-    TextView f=txt(flags,16,WHITE,false);r.addView(f,lp(72,-1));
-    TextView c=txt(code,15,WHITE,true);r.addView(c,new LinearLayout.LayoutParams(0,-1,1));
-    TextView p=txt(price,18,color,true);p.setTypeface(Typeface.create("sans-serif-medium",Typeface.BOLD));r.addView(p);
+  private static void icon(LinearLayout target,String symbol,Runnable run){TextView v=t(symbol,24,WHITE,true);v.setGravity(Gravity.CENTER);v.setBackground(fill(0xff10243c,14,EDGE));target.addView(v,lp(43,43));v.setOnClickListener(w->run.run());}
+  private static void pair(LinearLayout target,String f1,String f2,String code,String label,String key,boolean def,Actions actions){
+    LinearLayout row=horizontal();row.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);row.setPadding(d(10),0,d(10),0);row.setBackground(fill(0xff07172a,15,0xff203b59));LinearLayout.LayoutParams rp=lp(-1,68);rp.bottomMargin=d(7);target.addView(row,rp);
+    Toggle toggle=new Toggle(a,prefs.getBoolean(key,def));row.addView(toggle,lp(53,35));
+    TextView drag=t("⠿",20,0xff7185a1,false);drag.setGravity(Gravity.CENTER);row.addView(drag,lp(22,-1));
+    TextView flags=t(f1+" "+f2,22,WHITE,false);flags.setGravity(Gravity.CENTER);row.addView(flags,lp(78,-1));
+    LinearLayout names=vertical();names.setGravity(Gravity.CENTER_VERTICAL);row.addView(names,new LinearLayout.LayoutParams(0,-1,1));
+    TextView main=t(code,16,WHITE,true);main.setTextDirection(View.TEXT_DIRECTION_LTR);names.addView(main);
+    TextView minor=t(label,11,SUB,false);names.addView(minor);
+    toggle.setOnClickListener(v->{boolean enabled=!toggle.enabled;toggle.enabled=enabled;toggle.invalidate();prefs.edit().putBoolean(key,enabled).apply();actions.changed();});
+    row.setOnClickListener(v->toggle.performClick());
   }
-  private static void pair(LinearLayout target,String flags,String code,String label,String key,boolean def,Actions actions){
-    LinearLayout r=horizontal();r.setPadding(dp(12),dp(7),dp(12),dp(7));r.setBackground(bg(DEEP,15,EDGE));LinearLayout.LayoutParams row=lp(-1,69);row.bottomMargin=dp(7);target.addView(r,row);
-    Switch sw=new Switch(a);sw.setShowText(false);sw.setChecked(prefs.getBoolean(key,def));sw.setThumbTintList(new ColorStateList(new int[][]{new int[]{android.R.attr.state_checked},new int[]{}},new int[]{WHITE,0xffa3b2c2}));sw.setTrackTintList(new ColorStateList(new int[][]{new int[]{android.R.attr.state_checked},new int[]{}},new int[]{BLUE,0xff536175}));r.addView(sw,lp(56,-2));
-    LinearLayout name=vertical();name.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams nl=new LinearLayout.LayoutParams(0,-1,1);nl.setMargins(dp(6),0,dp(6),0);r.addView(name,nl);
-    TextView codeView=txt(code,17,WHITE,true);codeView.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);name.addView(codeView);
-    TextView small=txt(label,11,SUB,false);small.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);name.addView(small);
-    TextView flag=txt(flags,21,WHITE,false);flag.setGravity(Gravity.CENTER);r.addView(flag,lp(80,-1));
-    r.setOnClickListener(v->sw.setChecked(!sw.isChecked()));
-    sw.setOnCheckedChangeListener((b,checked)->{prefs.edit().putBoolean(key,checked).apply();actions.changed();});
+  private static void action(LinearLayout p,String label,GradientDrawable background,int height,Runnable onClick){TextView v=t(label,16,WHITE,true);v.setGravity(Gravity.CENTER);v.setBackground(background);v.setElevation(d(3));p.addView(v,lp(-1,height));v.setOnClickListener(w->onClick.run());}
+  private static final class Toggle extends View {
+    boolean enabled; Paint p=new Paint(3);
+    Toggle(Activity a,boolean on){super(a);enabled=on;setClickable(true);}
+    @Override protected void onDraw(Canvas c){super.onDraw(c);float w=getWidth(),h=getHeight(),cy=h/2f,rad=Math.min(h*.40f,d(16));p.setColor(enabled?0xff1879ff:0xff3d4c60);p.setShadowLayer(enabled?d(7):0,0,0,0xff206dff);c.drawRoundRect(d(1),cy-rad,w-d(1),cy+rad,rad,rad,p);p.clearShadowLayer();p.setColor(enabled?Color.WHITE:0xffc2ccdb);float x=enabled?w-rad-d(4):rad+d(4);c.drawCircle(x,cy,rad*.79f,p);}
   }
-  private static void action(LinearLayout target,String label,GradientDrawable drawable,Runnable click){
-    TextView b=txt(label,16,WHITE,true);b.setGravity(Gravity.CENTER);b.setBackground(drawable);b.setElevation(dp(2));target.addView(b,lp(-1,58));b.setOnClickListener(v->click.run());
+  private static final class Hero extends View {
+    Paint p=new Paint(3); Typeface digits=Typeface.create("sans-serif-condensed",Typeface.BOLD);
+    Hero(Activity a){super(a);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
+    void text(Canvas c,String s,float x,float y,float size,int color,Typeface font){p.reset();p.setAntiAlias(true);p.setColor(color);p.setTypeface(font);p.setTextSize(d(size));c.drawText(s,x,y,p);}
+    @Override protected void onDraw(Canvas c){super.onDraw(c);float w=getWidth(),h=getHeight();float r=d(25);
+      p.setShader(new LinearGradient(0,0,w,h,new int[]{0xff15365b,0xff06162b,0xff09284d},null,Shader.TileMode.CLAMP));c.drawRoundRect(d(2),d(3),w-d(2),h-d(3),r,r,p);p.setShader(null);
+      p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(d(1.3f));p.setColor(0xff257bff);c.drawRoundRect(d(2),d(3),w-d(2),h-d(3),r,r,p);p.setStyle(Paint.Style.FILL);
+      p.setShader(new RadialGradient(w*.13f,h*.10f,w*.52f,new int[]{0x77338aff,0x002f75ff},null,Shader.TileMode.CLAMP));c.drawRoundRect(d(2),d(3),w-d(2),h-d(3),r,r,p);p.setShader(null);
+      // Deliberately decorative dotted world-map silhouette; never interpreted as market data.
+      p.setColor(0x293d8ac6);float dot=d(1.15f);for(int ix=0;ix<65;ix++)for(int iy=0;iy<20;iy++){float xx=w*(ix+.5f)/65, yy=h*(iy+.5f)/20;float nx=xx/w,ny=yy/h;boolean land=(Math.pow((nx-.22)/.13,2)+Math.pow((ny-.38)/.24,2)<1)||(Math.pow((nx-.36)/.09,2)+Math.pow((ny-.76)/.22,2)<1)||(Math.pow((nx-.62)/.23,2)+Math.pow((ny-.42)/.22,2)<1)||(Math.pow((nx-.79)/.09,2)+Math.pow((ny-.76)/.11,2)<1);if(land)c.drawCircle(xx,yy,dot,p);}
+      p.setColor(0xff72aefb);c.drawRoundRect(w*.45f,d(7),w*.55f,d(10),d(3),d(3),p);
+      float left=d(23),base=d(47),step=d(37);String[] flags={"🇪🇺  🇺🇸","🇺🇸  🇪🇬","🇺🇸  🇮🇱"}, codes={"EUR/USD","USD/EGP","USD/ILS"},prices={"1.1255","53.4500","3.0886"};
+      for(int i=0;i<3;i++){float y=base+step*i;text(c,flags[i],left,y,18,WHITE,regular);text(c,codes[i],w*.30f,y,15,WHITE,digits);text(c,prices[i],w*.66f,y,18,WHITE,digits);}
+    }
   }
 }
